@@ -25,10 +25,8 @@ import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.database.AppDatabase
 import com.movtery.zalithlauncher.game.account.auth_server.data.AuthServer
 import com.movtery.zalithlauncher.game.account.auth_server.data.AuthServerDao
-import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.androidText
-import com.movtery.zalithlauncher.utils.isInGreaterChina
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.network.isNetworkAvailable
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +36,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.apache.commons.io.FileUtils
-import java.io.File
 import java.util.concurrent.CopyOnWriteArrayList
 
 private const val TAG = "AccountManager"
@@ -63,8 +60,12 @@ object AccountsManager {
     /** 控制刷新所有账号衣橱 */
     val refreshWardrobe = _refreshWardrobe.asStateFlow()
 
+    /**
+     * @deprecated Offline restriction removed in 2.4 restore (Option A). Always false for backward compatibility.
+     * Kept only to avoid breaking external callers; will be removed in next major.
+     */
     private val _isOffline = MutableStateFlow(false)
-    val isOffline = _isOffline
+    val isOffline = _isOffline.asStateFlow()
 
     private lateinit var database: AppDatabase
     private lateinit var accountDao: AccountDao
@@ -209,21 +210,13 @@ object AccountsManager {
     }
 
     /**
-     * 刷新当前账号，同时刷新非中国大陆地区的正版状态
+     * 刷新当前账号 - pre-2.4 behaviour: always allow any account type (Microsoft / Local / External)
+     * Offline restriction removed per Option A.
      */
     private fun refreshCurrentAccountState() {
-        val currentAccount = getCurrentAccount()
-        val isOffline = checkLimit()
-        _currentAccountFlow.update {
-            //若处于非正版状态，不允许使用账号
-            if (isOffline) null else currentAccount
-        }
-        _isOffline.update { isOffline }
-    }
-
-    private fun checkLimit(): Boolean {
-        val circumventLimit = File(PathManager.DIR_FILES_EXTERNAL, "circumventLimit")
-        return !circumventLimit.exists() && !isInGreaterChina() && !hasMicrosoftAccount()
+        _currentAccountFlow.value = getCurrentAccount()
+        // Keep isOffline false for compatibility (no longer gates UI)
+        _isOffline.value = false
     }
 
     /**

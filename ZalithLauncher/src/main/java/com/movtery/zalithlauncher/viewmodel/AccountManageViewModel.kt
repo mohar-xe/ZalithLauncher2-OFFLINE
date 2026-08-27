@@ -244,21 +244,19 @@ class AccountManageViewModel @Inject constructor(
     )
 
     /**
-     * 账号数据状态流统一管理
+     * 账号数据状态流统一管理 - pre-2.4: no offline restriction, isOffline always false (kept for compatibility)
      */
     val profileUiState: StateFlow<ProfileUiState> = kotlinxCombine(
         AccountsManager.accountsFlow,
         AccountsManager.currentAccountFlow,
         AccountsManager.authServersFlow,
-        _accountCapeOpMap,
-        AccountsManager.isOffline
-    ) { accounts, currentAccount, authServers, accountCapeOpMap, isOffline ->
+        _accountCapeOpMap
+    ) { accounts, currentAccount, authServers, accountCapeOpMap ->
         ProfileUiState(
             accounts = accounts,
             currentAccount = currentAccount,
             authServers = authServers,
-            accountCapeOpMap = accountCapeOpMap,
-            isOffline = isOffline
+            accountCapeOpMap = accountCapeOpMap
         )
     }.stateIn(
         scope = viewModelScope,
@@ -271,6 +269,7 @@ class AccountManageViewModel @Inject constructor(
         val currentAccount: Account? = null,
         val authServers: List<AuthServer> = emptyList(),
         val accountCapeOpMap: Map<String, List<PlayerProfile.Cape>> = emptyMap(),
+        @Deprecated("Offline restriction removed - always false")
         val isOffline: Boolean = false
     )
 

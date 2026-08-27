@@ -41,7 +41,6 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.game.account.AccountsManager
 import com.movtery.zalithlauncher.game.launch.LaunchGame
 import com.movtery.zalithlauncher.game.plugin.ApkPlugin
 import com.movtery.zalithlauncher.game.plugin.natives.NativePluginManager
@@ -168,11 +167,8 @@ fun LaunchGameOperation(
         is LaunchGameOperation.NoAccount -> {
             LaunchedEffect(Unit) {
                 eventViewModel.sendToast(androidText(R.string.game_launch_no_account))
-                val isOffline = AccountsManager.isOffline.value
-                toAccountManageScreen(
-                    if (isOffline) FirstLoginMenu.MICROSOFT
-                    else FirstLoginMenu.NORMAL
-                )
+                // pre-2.4: always show full login menu with offline option
+                toAccountManageScreen(FirstLoginMenu.NORMAL)
                 updateOperation(LaunchGameOperation.None)
             }
         }
