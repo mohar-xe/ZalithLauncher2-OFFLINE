@@ -41,6 +41,7 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.game.account.AccountsManager
 import com.movtery.zalithlauncher.game.launch.LaunchGame
 import com.movtery.zalithlauncher.game.plugin.ApkPlugin
 import com.movtery.zalithlauncher.game.plugin.natives.NativePluginManager
