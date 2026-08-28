@@ -46,10 +46,14 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
-            storeFile = file("zalith_launcher.jks")
-            storePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt")
-            keyAlias = "movtery_zalith"
-            keyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt")
+            // Option A: fallback to debug keystore when no custom passwords provided (offline fork, no secrets)
+            val customStorePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt", null)?.takeIf { it.isNotEmpty() }
+            val customKeyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt", null)?.takeIf { it.isNotEmpty() }
+            val useReleaseKeystore = customStorePassword != null && customKeyPassword != null && file("zalith_launcher.jks").canRead()
+            storeFile = if (useReleaseKeystore) file("zalith_launcher.jks") else file("zalith_launcher_debug.jks")
+            storePassword = if (useReleaseKeystore) customStorePassword else defaultStorePassword
+            keyAlias = if (useReleaseKeystore) "movtery_zalith" else "movtery_zalith_debug"
+            keyPassword = if (useReleaseKeystore) customKeyPassword else defaultKeyPassword
         }
         create("debugBuild") {
             storeFile = file("zalith_launcher_debug.jks")
